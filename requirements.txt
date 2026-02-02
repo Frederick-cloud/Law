@@ -1,0 +1,14 @@
+# PDF 处理
+pymupdf
+
+# 大语言模型与 LangChain 框架
+langchain-huggingface
+langchain-core
+
+# 状态机与工作流管理
+langgraph
+
+# 基础依赖与类型支持
+huggingface_hub
+typing-extensions
+python-dotenv

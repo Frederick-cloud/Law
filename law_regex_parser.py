@@ -58,7 +58,7 @@ class LawFileTool:
         return f"已找到文件《{files[0]}》，共有 {len(clauses)} 条。前3条预览：\n" + "\n".join(clauses[:3])
 
 
-law_tool = LawFileTool(directory="/Users/lxj/Documents/DFZQ")
+law_tool = LawFileTool(directory="/Users/lxj/Documents/Law")
 
 
 # 5. 定义节点逻辑
@@ -114,7 +114,7 @@ app = workflow.compile()
 
 # 7. 运行
 if __name__ == "__main__":
-    print("--- 法律解析助手已就绪 (DFZQ 项目) ---")
+    print("--- 法律解析助手已就绪 ---")
     while True:
         u_input = input("\nUser: ")
         if u_input.lower() == 'q': break
