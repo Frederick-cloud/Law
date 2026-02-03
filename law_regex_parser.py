@@ -7,9 +7,14 @@ from langchain_huggingface import ChatHuggingFace, HuggingFaceEndpoint
 from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
+import sys
+import io
+
+sys.stdin = io.TextIOWrapper(sys.stdin.buffer, encoding='utf-8')
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
 # 1. 环境配置
-os.environ["HUGGINGFACEHUB_API_TOKEN"] = "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"
+os.environ["HUGGINGFACEHUB_API_TOKEN"] = "sk-"
 
 
 # 2. 定义状态
@@ -116,7 +121,10 @@ app = workflow.compile()
 if __name__ == "__main__":
     print("--- 法律解析助手已就绪 ---")
     while True:
-        u_input = input("\nUser: ")
+        sys.stdout.write("\nUser: ")
+        sys.stdout.flush()
+        raw_data = sys.stdin.buffer.readline()
+        u_input = raw_data.decode('utf-8', errors='ignore').strip()
         if u_input.lower() == 'q': break
         for event in app.stream({"messages": [HumanMessage(content=u_input)]}):
             for value in event.values():
