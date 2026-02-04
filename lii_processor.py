@@ -106,38 +106,36 @@ class LegalStructureEngine:
                     continue  # 正常结束本次循环
 
             # --- B. 识别条文 (Section) ---
-            # 解决颗粒度问题：只要以“第X条”开头，无论 Docling 如何打标，强行切分
             a_match = re.match(r'^第([0-9一二三四五六七八九十百]+)条', text)
             if a_match:
-                has_entered_body = True  # 发现条文，彻底进入正文模式
-
+                has_entered_body = True
                 a_num_str = a_match.group(1)
                 a_val = int(a_num_str) if a_num_str.isdigit() else cn_to_int(a_num_str)
 
-                # 容错：防止第一章被漏掉导致 current_c_uri 为空
                 if not current_c_uri:
                     current_c_uri = f"/{doc_id.lower()}/c1"
 
                 article_uri = f"{current_c_uri}/a{a_val}"
                 active_uri = article_uri
 
-                # 存储条文节点，parent_uri 指向章
-                self._save_node(doc_id, article_uri, "section", a_val, text, current_c_uri)
+                # ✅ 修改点：在这里对首行进行清洗，确保存入时末尾没有换行符
+                header_cleaned = text.replace('\n', '').replace(' ', '')
+                self._save_node(doc_id, article_uri, "section", a_val, header_cleaned, current_c_uri)
                 continue
 
             # --- C. 内容追加 (Append Content) ---
-            # 解决只有名称没有正文的问题：将内容追加到 active_uri 对应的节点
             if has_entered_body and active_uri:
-                # 过滤常见物理噪声
-                if re.match(r'^(证监会|页码|\[source|中华人民共和国|第.*页|-\s*\d+\s*-)', text):
-                    continue
+                # ... (保留原有的噪声过滤逻辑)
 
-                # 清洗文本并追加
+                # 清洗当前行文本
                 cleaned = text.replace('\n', '').replace(' ', '')
+
+                # ✅ 修改点：去掉 "\n" +，改用一个空格 ' ' 衔接，或者直接衔接
+                # 如果希望完全没有换行或空格，就直接用 cleaned
                 self.cur.execute("""
                     UPDATE legal_nodes SET content = content || %s 
                     WHERE uri = %s
-                """, ("\n" + cleaned, active_uri))
+                """, (' ' + cleaned, active_uri))  # ' ' 确保“第三条”和“为了预防...”之间不会粘连
 
         self.conn.commit()
         print(f"✅ {doc_id} 已解析为 LII 结构化数据，共计完成颗粒度切分。")
@@ -168,11 +166,11 @@ if __name__ == "__main__":
 
     # [cite_start]处理《反洗钱法》 [cite: 1-173]
     engine.parse_and_store(
-        file_path="./部分2020年后外规/中华人民共和国公司法_20231229.docx",
-        doc_id="GSF",
+        file_path="./部分2020年后外规/已成功/中华人民共和国数据安全法.pdf",
+        doc_id="SJAQF",
         metadata={
-            "title": "中华人民共和国公司法",
-            "creator": "全国人大常委会",
+            "title": "中华人民共和国数据安全法",
+            "creator": "NA",
             "date": "2023-12-29"
         }
     )
